@@ -67,12 +67,16 @@ def draw_line(p1, p2):
 
     draw_point(p2)
 
-points = [(-300,200),(400,350),(300,-300),(-200,-200)]
+#points = [(-300,200),(400,350),(300,-300),(-200,-200)]
 
+points = [(random.randint(-500,500),random.randint(-350,350))
+          for i in range(10)]
 
-
+print(points)
 prepare_turtle_canvas()
 
+for i in points:
+    draw_point(i)
 
 for i in range(0,len(points) - 1):
     draw_line(points[i],points[i+1])
