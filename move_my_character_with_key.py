@@ -1,6 +1,7 @@
 from typing import List, Any
 from pico2d import *
 import string
+from random import *
 from enum import Enum, auto
 from time import *
 
@@ -48,12 +49,20 @@ class Behavior(Enum):
     Run = auto()
 
 class arrow:
-    def __init__(self,path = string):
+    def __init__(self,path = string,x = int,y=  int):
         self.Object = load_image(path)
+        self.x = x;
+        self.y = y;
 
 
-    def Render(self,x,y):
-        self.Object.draw(x,y)
+
+    def Render(self):
+        self.Object.draw(self.x,self.y)
+
+    def GetPosition(self):
+        return (self.x,self.y)
+
+
 
 
 
@@ -73,91 +82,98 @@ class Character:
         self.y = 400
         self.speed = 5
         self.isComposite = False
-        self.State = Behavior.Run.name
+        self.State = Behavior.Idle.name
+
+
+        self.OldX = 0
+        self.OldY = 0
+        self.T              = 0.0
+        self.isDestinating  = False
+
+
+
+
 
     def ChangeBehavior(self, TargetBehavior=Behavior):
         if TargetBehavior == Behavior.Idle.name:
             self.FrameCount = 0
-            if self.IdleImage is not None:
-                self.CurrentImage = self.IdleImage
+            if self.State == Behavior.Run.name:
+                if self.IdleImage is not None:
+                    self.CurrentImage = self.IdleImage
+                    self.State = "Idle"
+
+
 
 
         elif TargetBehavior == Behavior.Run.name:
-            self.FrameCount = 0
-            if self.RunImage is not None:
-                self.CurrentImage = self.RunImage
-                print("Run")
+            if self.State == Behavior.Idle.name:
+                self.FrameCount = 0
+                if self.RunImage is not None:
+                    self.CurrentImage = self.RunImage
+                    print("Run")
+                    self.State = "Run"
+
+
+
 
 
         self.Object = load_image(self.CurrentImage.Path)
 
-    def EventHandler(self,Events = List[Any]):
-
-        OldX = self.x
-        OldY = self.y
 
 
 
-        for event in Events:
+    def NextCoordinate(self,Ar = arrow):
+        if Ar == None:
+            return
+        if not self.isDestinating:
+            self.OldX = self.x
+            self.OldY = self.y
+
+            self.isDestinating = True
+
+            self.ChangeBehavior("Run")
+
+
+        x2 = Ar.GetPosition()[0]
+        y2 = Ar.GetPosition()[1]
+
+        if self.x > x2 :
+            self.isComposite = True
+        else :
+            self.isComposite = False
 
 
 
-            if event.type == SDL_KEYDOWN:
-                if event.key == SDLK_LEFT:
-                    self.DirectionX -= 1
-                    self.isComposite = True
-                elif event.key == SDLK_RIGHT:
-                    self.DirectionX += 1
-                    self.isComposite = False
+        if 0.0 <=  self.T < 0.3:
+            self.T += 0.003
+        elif 0.3 <= self.T < 0.6:
+            self.T += 0.07
+        elif 0.6 <= self.T < 1.0:
+            self.T += 0.01
 
 
-                if event.key == SDLK_DOWN:
-                    self.DirectionY -= 1
-                elif event.key == SDLK_UP:
-                    self.DirectionY += 1;
+        self.x  = (1-self.T)*self.OldX + self.T * x2
+        self.y  = (1-self.T)*self.OldY + self.T * y2
 
 
+        if self.T >= 1:
+            self.T = 0
+            self.isDestinating = False
+            self.OldX = 0
+            self.OldY = 0
+            return True
 
+        return False
 
-            if event.type == SDL_KEYUP:
-
-                if event.key == SDLK_RIGHT:
-                    self.DirectionX -= 1
-                elif event.key == SDLK_LEFT:
-                    self.DirectionX += 1
-
-                if event.key == SDLK_DOWN:
-                    self.DirectionY += 1
-                elif event.key == SDLK_UP:
-                    self.DirectionY -= 1;
-
-
-        self.x += self.DirectionX * self.speed
-        self.y += self.DirectionY * self.speed
-
-
-
-        if self.x == OldX and self.y == OldY:
-            if self.State != 'Idle':
-                self.ChangeBehavior('Idle')
-                self.State = 'Idle'
-        else:
-            if self.State != 'Run':
-                self.ChangeBehavior('Run')
-                self.State = 'Run'
-
-
-
-
-
+    def GetCenterCoordinate(self):
+        print(  (self.x - self.CurrentImage.Width / 2 , self.y - self.CurrentImage.Height / 2)  )
+        return (self.x - self.CurrentImage.Width / 2 , self.y - self.CurrentImage.Height / 2)
 
 
 
     def ResisterRunImage(self,runImage = Image):
         self.RunImage = runImage
 
-    def SetCharacterSpeed(self,speed = int):
-        self.speed = speed
 
     def Draw(self,Scale=int):
 
@@ -166,6 +182,10 @@ class Character:
         self.x = clamp(20,self.x,get_canvas_width())
         self.y = clamp(20,self.y,get_canvas_height())
 
+        DrawX = self.x
+        DrawY = self.y + self.CurrentImage.Height
+
+
 
         if not self.isComposite:
             self.Object.clip_draw(
@@ -173,8 +193,8 @@ class Character:
                 0,
                 self.CurrentImage.Width,
                 self.CurrentImage.Height,
-                self.x,
-                self.y,
+                DrawX,
+                DrawY,
                 150 * Scale,
                 100 * Scale
             )
@@ -186,8 +206,8 @@ class Character:
                 self.CurrentImage.Height,
                 0,
                 'h',
-                self.x,
-                self.y,
+                DrawX,
+                DrawY,
                 150 * Scale,
                 100 * Scale,
             )
@@ -217,23 +237,34 @@ Character_RunImage = Image("_Run.png", 10, 120, 80)
 
 MainCharacter = Character(Character_IdleImage)
 MainCharacter.ResisterRunImage(Character_RunImage)
-MainCharacter.SetCharacterSpeed(10)
-
-Arrow = arrow("hand_arrow.png")
 
 
+Arrow = arrow("hand_arrow.png",randint(0,1280),randint(0,1024))
+
+
+Arrows: List[Any] = []
 EventList: List[Any] = []
+
+MainCharacter.x = 640
+MainCharacter.y = 512
+
 # Main Process
 while running:
     clear_canvas()
     EventList = get_events()
     BackGround.draw(BackGround_Width // 2, BackGround_Height // 2)
+    # Calculate Between here
+
+    if MainCharacter.NextCoordinate(Arrow):
+        Arrow = arrow("hand_arrow.png",randint(0,1280),randint(0,1024))
+
+
+    # Calculate Between here
     # Draw between here
 
 
-    MainCharacter.EventHandler(EventList)
     MainCharacter.Draw(4)
-    Arrow.Render(200,200)
+    Arrow.Render()
 
     # Draw between here
     delay(0.05)

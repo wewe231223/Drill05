@@ -61,8 +61,8 @@ def draw_line(p1, p2):
     for t in range(1,100+1,5):
         dt = t / 100
 
-        x = (1-dt)*x1 + dt * x2
-        y = (1 - dt) * y1 + dt * y2
+        x = (1  -   dt) *   x1 + dt * x2
+        y = (1  -   dt) *   y1 + dt * y2
         draw_point((x,y))
 
     draw_point(p2)
