@@ -58,7 +58,7 @@ def draw_line(p1, p2):
 
 
 
-    for t in range(100+1,1,-1):
+    for t in range(1,100+1,5):
         dt = t / 100
 
         x = (1-dt)*x1 + dt * x2
@@ -67,10 +67,15 @@ def draw_line(p1, p2):
 
     draw_point(p2)
 
+points = [(-300,200),(400,350),(300,-300),(-200,-200)]
+
+
 
 prepare_turtle_canvas()
 
-draw_line((-100,-100),(300,150))
-draw_line((-100,-100), (-100,300))
+
+for i in range(0,len(points) - 1):
+    draw_line(points[i],points[i+1])
+draw_line(points[-1],points[0])
 
 turtle.done()
