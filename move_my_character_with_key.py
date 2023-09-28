@@ -27,10 +27,6 @@ BackGround = load_image("TUK_GROUND.png")
 running = True
 
 
-class Timer:
-    pass
-
-
 class Image:
     def __init__(self, path=string, frame=int, width=int, height=int):
         # 이미지 이름
@@ -76,11 +72,8 @@ class Character:
         self.CurrentImage = DefaultImg
         self.Object = load_image(DefaultImg.Path)
         self.FrameCount = 0
-        self.DirectionX = 0
-        self.DirectionY = 0
         self.x = 400
         self.y = 400
-        self.speed = 5
         self.isComposite = False
         self.State = Behavior.Idle.name
 
@@ -255,6 +248,8 @@ while running:
     BackGround.draw(BackGround_Width // 2 , BackGround_Height // 2)
     # Calculate Between here
 
+
+    # if Character arrived Arrow
     if MainCharacter.NextCoordinate(Arrow):
         Arrow = arrow("hand_arrow.png",randint(0,1280 - 100),randint(0,1024 - 100))
 
