@@ -144,11 +144,11 @@ class Character:
 
 
 
-        if 0.0 <=  self.T < 0.3:
-            self.T += 0.003
-        elif 0.3 <= self.T < 0.6:
-            self.T += 0.07
-        elif 0.6 <= self.T < 1.0:
+        if 0.0 <=  self.T < 0.2:
+            self.T += 0.01
+        elif 0.2 <= self.T < 0.8:
+            self.T += 0.05
+        elif 0.8 <= self.T < 1.0:
             self.T += 0.01
 
 
@@ -183,7 +183,7 @@ class Character:
         self.y = clamp(20,self.y,get_canvas_height())
 
         DrawX = self.x
-        DrawY = self.y + self.CurrentImage.Height
+        DrawY = self.y + self.CurrentImage.Height * 1.5
 
 
 
@@ -252,11 +252,11 @@ MainCharacter.y = 512
 while running:
     clear_canvas()
     EventList = get_events()
-    BackGround.draw(BackGround_Width // 2, BackGround_Height // 2)
+    BackGround.draw(BackGround_Width // 2 , BackGround_Height // 2)
     # Calculate Between here
 
     if MainCharacter.NextCoordinate(Arrow):
-        Arrow = arrow("hand_arrow.png",randint(0,1280),randint(0,1024))
+        Arrow = arrow("hand_arrow.png",randint(0,1280 - 100),randint(0,1024 - 100))
 
 
     # Calculate Between here
